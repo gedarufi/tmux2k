@@ -51,7 +51,7 @@ get_percent() {
         [ "$ram_icon_link_to" = 'usage' ] &&
             tmux set -g '@tmux2k-ram-linked-color' "$color"
     fi
-    output+="$(normalize_padding "${percent}%")"
+    output+="${percent}%"
     printf '%s' "$output"
 }
 

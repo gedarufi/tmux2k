@@ -49,7 +49,7 @@ get_gpu() {
         [ "$gpu_icon_link_to" = 'usage' ] &&
             tmux set -g '@tmux2k-gpu-linked-color' "$color"
     fi
-    output+="$(normalize_padding "${usage}%")"
+    output+="${usage}%"
     printf '%s' "$output"
 }
 

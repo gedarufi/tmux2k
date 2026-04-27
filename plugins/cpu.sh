@@ -66,9 +66,9 @@ get_cpu_usage() {
     fi
 
     if [ "$cpu_usage_decimal" = 'true' ] ; then
-        output+="$(normalize_padding "${percent}%" 6)"
+        output+="${percent}%"
     else
-        output+="$(normalize_padding "${percent%.*}%" 4)"
+        output+="${percent%.*}%"
     fi
 
     printf '%s' "$output"
