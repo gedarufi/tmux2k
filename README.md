@@ -1,40 +1,40 @@
 # tmux2k — gedarufi fork
 
-Fork personal de [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) con customizaciones para el entorno de gedarufi.
+Personal fork of [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) with customizations for gedarufi's environment.
 
-## Instalación (tpm)
+## Installation (tpm)
 
 ```bash
 set -g @plugin 'gedarufi/tmux2k'
 ```
 
-`prefix + I` para instalar.
+`prefix + I` to install.
 
-## Cambios respecto al upstream
+## Changes from upstream
 
-### `plugins/path.sh` — Estilo agnoster compacto
-- `$HOME` → ícono de casa ``
-- Directorios intermedios → `  ` (ícono de carpeta, sin nombre)
-- Último segmento → nombre completo
+### `plugins/path.sh` — Compact agnoster style
+- `$HOME` → home icon ``
+- Intermediate directories → `  ` (folder icon, no name)
+- Last segment → full name
 
 ```
 ~/Documents/coding/synkron/code  →   ~    code
 ```
 
-### `plugins/session.sh` — Ícono de OS dinámico
+### `plugins/session.sh` — Dynamic OS icon
 - macOS: ` `, Linux: ``, WSL: ` WSL`
-- Si el nombre de sesión es numérico, muestra solo el ícono (sin número)
+- If the session name is numeric, shows only the icon (no number)
 
-### `plugins/cpu.sh` / `plugins/gpu.sh` / `plugins/ram.sh` — Output compacto
-- Eliminado `normalize_padding` → `13%` en lugar de ` 13% `
+### `plugins/cpu.sh` / `plugins/gpu.sh` / `plugins/ram.sh` — Compact output
+- Removed `normalize_padding` → `13%` instead of ` 13% `
 
-### `plugins/langs.sh` — Versión del lenguaje del proyecto actual
-- Detecta Node, Python, Ruby, Go, PHP según archivos en el directorio del pane
+### `plugins/langs.sh` — Current project language version
+- Detects Node, Python, Ruby, Go, PHP from files in the pane directory
 
-### `plugins/windows.sh` — Lista de ventanas
-- Muestra ventanas con indicador activo/inactivo
+### `plugins/windows.sh` — Window list
+- Shows windows with active/inactive indicator
 
-## Layout actual (Tokyo Night Storm)
+## Current layout (Tokyo Night Storm)
 
 ```
 [Session][Path][Git][● win1][● win2]...        [Battery][CPU][GPU][RAM][Langs][Time]
@@ -45,7 +45,7 @@ set -g @tmux2k-left-plugins "session path git"
 set -g @tmux2k-right-plugins "battery cpu gpu ram langs time"
 ```
 
-## Paleta de colores
+## Color palette
 
 | Variable           | Hex       |
 |--------------------|-----------|
@@ -62,16 +62,16 @@ set -g @tmux2k-right-plugins "battery cpu gpu ram langs time"
 | `red`              | `#f7768e` |
 | `orange`           | `#ff9e64` |
 
-## Sincronizar con upstream
+## Syncing with upstream
 
 ```bash
 git fetch upstream
 git rebase upstream/main
-# resolver conflictos en los 5 archivos modificados si los hay
+# resolve conflicts in the modified files if any
 git push origin main
 ```
 
-## Fuente
+## Source
 
 - Upstream: [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k)
-- Documentación completa de plugins y opciones: ver upstream README
+- Full plugin and options documentation: see upstream README

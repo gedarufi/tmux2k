@@ -1,97 +1,97 @@
 # TODO — tmux2k gedarufi fork
 
-Ideas de mejora para los plugins. Marcadas por prioridad/complejidad.
+Plugin improvement ideas, sorted by priority and complexity.
 
 ---
 
-## Mejoras a plugins existentes
+## Improvements to existing plugins
 
-### `plugins/git.sh` — Detección de forge por remote URL
+### `plugins/git.sh` — Forge detection from remote URL
 
-Actualmente usa siempre el mismo ícono de repo (). La idea es parsear la URL del remote para mostrar el ícono correcto de la plataforma.
+Currently always uses the same repo icon (). The idea is to parse the remote URL to show the correct platform icon.
 
-**Implementación:**
+**Implementation:**
 ```bash
 remote_url=$(git -C "$path" remote get-url origin 2>/dev/null)
 case "$remote_url" in
-    *github.com*)   forge_icon="" ;;
-    *gitlab.com*)   forge_icon="" ;;
+    *github.com*)    forge_icon="" ;;
+    *gitlab.com*)    forge_icon="" ;;
     *bitbucket.org*) forge_icon="" ;;
-    *codeberg.org*) forge_icon="󰊢" ;;
-    *)              forge_icon="" ;;  # gitea/forgejo/otro
+    *codeberg.org*)  forge_icon="󰊢" ;;
+    *)               forge_icon="" ;;  # gitea/forgejo/other
 esac
 ```
 
-Reemplaza `$repo_icon` por `$forge_icon` en `get_message()`.
+Replace `$repo_icon` with `$forge_icon` in `get_message()`.
 
 ---
 
-### `plugins/git.sh` — Información adicional
+### `plugins/git.sh` — Additional info
 
-- [ ] **Ahead/behind:** mostrar `↑2 ↓1` cuando la rama tiene diferencias con el upstream remoto
+- [ ] **Ahead/behind:** show `↑2 ↓1` when the branch has differences with the remote upstream
   ```bash
   git rev-list --count HEAD...@{u} 2>/dev/null
   ```
-- [ ] **Stash:** mostrar `` + conteo si hay stashes (`git stash list | wc -l`)
-- [ ] **Tag:** mostrar el tag si HEAD está exactamente en uno (`git describe --exact-match --tags 2>/dev/null`)
+- [ ] **Stash:** show `` + count if stashes exist (`git stash list | wc -l`)
+- [ ] **Tag:** show the tag if HEAD is exactly on one (`git describe --exact-match --tags 2>/dev/null`)
 
 ---
 
-### `plugins/langs.sh` — Lenguajes faltantes
+### `plugins/langs.sh` — Missing languages
 
-| Lenguaje   | Archivo de detección          | Ícono |
-|------------|-------------------------------|-------|
-| Rust       | `Cargo.toml`                  |      |
-| TypeScript | `tsconfig.json`               |      |
-| Bun        | `bun.lockb` / `bunfig.toml`   |      |
-| Deno       | `deno.json` / `deno.jsonc`    |      |
-| Elixir     | `mix.exs`                     |      |
-| Java       | `pom.xml` / `build.gradle`    |      |
-| Kotlin     | `build.gradle.kts`            |      |
-| Swift      | `Package.swift`               |      |
-
----
-
-### `plugins/session.sh` — Conteo de ventanas
-
-- [ ] Opción para añadir el conteo de ventanas de la sesión: ` dev [3]`
-- Configurable con `@tmux2k-session-show-window-count true`
-- Implementar con `tmux list-windows | wc -l`
+| Language   | Detection file                | Icon |
+|------------|-------------------------------|------|
+| Rust       | `Cargo.toml`                  |     |
+| TypeScript | `tsconfig.json`               |     |
+| Bun        | `bun.lockb` / `bunfig.toml`   |     |
+| Deno       | `deno.json` / `deno.jsonc`    |     |
+| Elixir     | `mix.exs`                     |     |
+| Java       | `pom.xml` / `build.gradle`    |     |
+| Kotlin     | `build.gradle.kts`            |     |
+| Swift      | `Package.swift`               |     |
 
 ---
 
-### `plugins/path.sh` — Modo raíz de repositorio
+### `plugins/session.sh` — Window count
 
-- [ ] Nueva opción `@tmux2k-path-mode`: `pane` (comportamiento actual) | `git-root`
-- En modo `git-root`: muestra el nombre del repositorio git en lugar del directorio del pane
-- Ejemplo: desde cualquier subdirectorio de `~/Documents/coding/synkron/src/api/` mostraría ` synkron`
-- Detectar con `git -C "$path" rev-parse --show-toplevel 2>/dev/null | xargs basename`
-
----
-
-### `plugins/battery.sh` (upstream) — Tiempo restante
-
-- [ ] Parsear `pmset -g batt` en macOS para extraer tiempo restante
-- Output: ` 87% 2:30` en lugar de solo ` 87%`
-- Ocultar el tiempo cuando está cargando (muestra `charging`)
+- [ ] Option to show the session's window count: ` dev [3]`
+- Configurable via `@tmux2k-session-show-window-count true`
+- Implement with `tmux list-windows | wc -l`
 
 ---
 
-## Plugins nuevos
+### `plugins/path.sh` — Git root mode
 
-### `plugins/forge.sh` — Hub del repositorio
+- [ ] New option `@tmux2k-path-mode`: `pane` (current behavior) | `git-root`
+- In `git-root` mode: shows the git repository name instead of the pane directory
+- Example: from any subdirectory of `~/Documents/coding/synkron/src/api/` it would show ` synkron`
+- Detect with `git -C "$path" rev-parse --show-toplevel 2>/dev/null | xargs basename`
 
-Plugin dedicado para mostrar la plataforma + nombre del repo + actividad abierta.
+---
+
+### `plugins/battery.sh` (upstream) — Time remaining
+
+- [ ] Parse `pmset -g batt` on macOS to extract remaining time
+- Output: ` 87% 2:30` instead of just ` 87%`
+- Hide time when charging (shows `charging`)
+
+---
+
+## New plugins
+
+### `plugins/forge.sh` — Repository hub
+
+Dedicated plugin to show the platform + repo name + open activity.
 
 ```
  gedarufi/dotfiles  2
- usuario/proyecto  5
+ user/project  5
 ```
 
-- Detecta forge desde remote URL (igual que la mejora de git.sh)
-- GitHub: PR count con `gh pr list --state open --json number | jq length`
-- GitLab: MR count con `glab mr list --state opened | wc -l`
-- Ocultar PR/MR count si el CLI no está disponible
+- Detects forge from remote URL (same as the git.sh improvement)
+- GitHub: PR count via `gh pr list --state open --json number | jq length`
+- GitLab: MR count via `glab mr list --state opened | wc -l`
+- Hide PR/MR count if CLI is not available
 - Config: `@tmux2k-forge-show-prs true`
 
 ---
@@ -103,18 +103,17 @@ Plugin dedicado para mostrar la plataforma + nombre del repo + actividad abierta
 ⎈ staging:api-ns
 ```
 
-- Parsear `kubectl config current-context` y `kubectl config view --minify -o jsonpath='{..namespace}'`
-- Colorear en rojo si el contexto contiene "prod" o "production"
+- Parse `kubectl config current-context` and `kubectl config view --minify -o jsonpath='{..namespace}'`
+- Color red if the context contains "prod" or "production"
 - Config: `@tmux2k-kubectl-show-namespace true`
-- Mostrar `⎈ —` si kubectl no está instalado o no hay contexto activo
+- Show `⎈ —` if kubectl is not installed or no context is active
 
 ---
 
-### `plugins/music.sh` — Reproducción actual
+### `plugins/music.sh` — Now playing
 
 ```
  Radiohead — Karma Police
- Sin reproducción
 ```
 
 - macOS: AppleScript → Spotify, Music.app
@@ -122,91 +121,91 @@ Plugin dedicado para mostrar la plataforma + nombre del repo + actividad abierta
   osascript -e 'tell app "Spotify" to (artist of current track) & " — " & (name of current track)'
   ```
 - Linux: `playerctl metadata --format "{{ artist }} — {{ title }}"`
-- Si no hay nada reproduciéndose: no mostrar nada (plugin se oculta)
-- Config: `@tmux2k-music-max-length 40` para truncar
+- If nothing is playing: show nothing (plugin hides itself)
+- Config: `@tmux2k-music-max-length 40` to truncate
 
 ---
 
-### `plugins/vpn.sh` — Estado de VPN
+### `plugins/vpn.sh` — VPN status
 
 ```
  ProtonVPN
- Sin VPN
+ No VPN
 ```
 
-- macOS: detectar interfaces `utun*` activas con `ifconfig | grep -E "^utun"`
-- Linux: detectar `tun0` / `ppp0`
-- Mostrar nombre si está disponible (ej. desde `scutil --nc list`)
-- Ícono verde  si conectado, rojo  si desconectado
+- macOS: detect active `utun*` interfaces via `ifconfig | grep -E "^utun"`
+- Linux: detect `tun0` / `ppp0`
+- Show name if available (e.g. from `scutil --nc list`)
+- Green icon  if connected, red  if disconnected
 - Config: `@tmux2k-vpn-show-name true`
 
 ---
 
-### `plugins/panes.sh` — Info de panes
+### `plugins/panes.sh` — Pane info
 
 ```
 ▣ 2/4
 ```
 
-- Muestra el índice del pane activo y el total en la ventana
+- Shows the active pane index and total count in the window
 - `tmux display-message -p "#{pane_index}/#{window_panes}"`
-- Útil en sesiones de trabajo intensivo con splits
+- Useful in heavy split-pane workflows
 
 ---
 
-## Mejoras visuales / UX
+## Visual / UX improvements
 
-### `plugins/path.sh` — Profundidad máxima configurable
+### `plugins/path.sh` — Configurable max depth
 
-- [ ] `@tmux2k-path-max-depth N` — si hay más de N carpetas intermedias, mostrar `...` en el medio
-- Ejemplo con `max-depth 2`: `~ ...  code` en lugar de `~    code`
+- [ ] `@tmux2k-path-max-depth N` — if there are more than N intermediate folders, show `...` in the middle
+- Example with `max-depth 2`: `~ ...  code` instead of `~    code`
 
-### `plugins/windows.sh` — Ícono por proceso
+### `plugins/windows.sh` — Process icon per window
 
-- [ ] Detectar el proceso corriendo en cada ventana y añadir ícono a la pill
-- `tmux list-windows -F "#{pane_current_command}"` para obtener el proceso
-- Mapa de proceso → ícono: `nvim` → , `python3` → , `node` → , `docker` → , `git` → 
+- [ ] Detect the running process in each window and add an icon to the pill
+- `tmux list-windows -F "#{pane_current_command}"` to get the process
+- Process → icon map: `nvim` → , `python3` → , `node` → , `docker` → , `git` → 
 - Config: `@tmux2k-windows-show-process-icon true`
 
-### Modo "focus" (toggle de barra)
+### Focus mode (status bar toggle)
 
-- [ ] Keybind para colapsar el status bar a solo `[session] ... [time]`
-- Toggle vía: `bind-key F run-shell "$current_dir/scripts/toggle-focus.sh"`
-- Estado persistido en opción tmux (`@tmux2k-focus-mode on/off`)
+- [ ] Keybind to collapse the status bar to just `[session] ... [time]`
+- Toggle via: `bind-key F run-shell "$current_dir/scripts/toggle-focus.sh"`
+- State persisted in tmux option (`@tmux2k-focus-mode on/off`)
 
 ---
 
-## Infraestructura del fork
+## Fork infrastructure
 
 ### `sync-from-upstream.sh`
 
-Script para sincronizar con el upstream sin perder las customizaciones:
+Script to sync with upstream without losing customizations:
 
 ```bash
 #!/usr/bin/env bash
 git fetch upstream
 git rebase upstream/main
-# Si hay conflictos, los reporta y para
+# Reports conflicts and stops if any
 ```
 
-Ejecutar con: `./sync-from-upstream.sh`
+Run with: `./sync-from-upstream.sh`
 
-### `.github/workflows/sync-check.yml` (opcional)
+### `.github/workflows/sync-check.yml` (optional)
 
-GitHub Action que crea un issue/PR automáticamente cuando el upstream `2kabhishek/tmux2k` tiene nuevos commits que no están en este fork. Usa `actions/checkout` + comparación de SHAs.
+GitHub Action that automatically opens an issue/PR when the upstream `2kabhishek/tmux2k` has new commits not yet in this fork. Uses `actions/checkout` + SHA comparison.
 
 ---
 
-## Prioridad sugerida
+## Suggested priority
 
-| Prioridad | Item |
-|-----------|------|
-| 🔴 Alta | `git.sh` — detección de forge (GitHub/GitLab/Bitbucket) |
-| 🔴 Alta | `langs.sh` — añadir Rust, TypeScript, Bun |
-| 🟡 Media | `forge.sh` — plugin de hub con PR/MR count |
-| 🟡 Media | `git.sh` — ahead/behind + stash |
-| 🟡 Media | `music.sh` — reproducción actual |
-| 🟢 Baja | `kubectl.sh` — Kubernetes context |
-| 🟢 Baja | `vpn.sh` — estado de VPN |
-| 🟢 Baja | `path.sh` — modo git-root |
-| 🟢 Baja | Modo "focus" toggle |
+| Priority | Item |
+|----------|------|
+| 🔴 High | `git.sh` — forge detection (GitHub/GitLab/Bitbucket) |
+| 🔴 High | `langs.sh` — add Rust, TypeScript, Bun |
+| 🟡 Medium | `forge.sh` — hub plugin with PR/MR count |
+| 🟡 Medium | `git.sh` — ahead/behind + stash |
+| 🟡 Medium | `music.sh` — now playing |
+| 🟢 Low | `kubectl.sh` — Kubernetes context |
+| 🟢 Low | `vpn.sh` — VPN status |
+| 🟢 Low | `path.sh` — git-root mode |
+| 🟢 Low | Focus mode toggle |

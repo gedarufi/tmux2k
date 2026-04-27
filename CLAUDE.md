@@ -1,44 +1,44 @@
 # tmux2k-gedarufi
 
-Fork personal de [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) con customizaciones específicas para el entorno de gedarufi.
+Personal fork of [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) with specific customizations for gedarufi's environment.
 
-## Propósito
+## Purpose
 
-Preservar los cambios hechos sobre el plugin tmux2k original para que no se pierdan al actualizar via tpm. El plugin se referencia desde `~/.config/tmux/tmux.conf`.
+Preserve changes made on top of the original tmux2k plugin so they are not lost when updating via tpm. The plugin is referenced from `~/.config/tmux/tmux.conf`.
 
-## Archivos modificados respecto al original
+## Modified files from upstream
 
 ### `plugins/path.sh`
-Reescrito con estilo agnoster compacto:
-- Reemplaza `$HOME` por ícono de casa ``
-- Cada segmento intermedio se representa con `  ` (ícono de carpeta, sin nombre)
-- Solo el último segmento (directorio actual) muestra su nombre completo
-- Ejemplo: `~/Documents/coding/synkron/code` → ` ~    code`
+Rewritten with compact agnoster style:
+- Replaces `$HOME` with home icon ``
+- Each intermediate segment is represented as `  ` (folder icon, no name)
+- Only the last segment (current directory) shows its full name
+- Example: `~/Documents/coding/synkron/code` → ` ~    code`
 
 ### `plugins/session.sh`
-- Muestra ícono del OS (` ` en macOS, `` en Linux)
-- Si el nombre de sesión es numérico, muestra solo el ícono (suprime el número)
+- Shows OS icon (` ` on macOS, `` on Linux)
+- If the session name is numeric, shows only the icon (suppresses the number)
 
 ### `plugins/cpu.sh`
-- Eliminado `normalize_padding` en `get_cpu_usage()` para quitar los espacios de relleno alrededor del porcentaje
-- Output compacto: `13%` en lugar de ` 13% `
+- Removed `normalize_padding` in `get_cpu_usage()` to eliminate padding spaces around the percentage
+- Compact output: `13%` instead of ` 13% `
 
 ### `plugins/gpu.sh`
-- Eliminado `normalize_padding` en `get_gpu()` para output compacto
+- Removed `normalize_padding` in `get_gpu()` for compact output
 
 ### `plugins/ram.sh`
-- Eliminado `normalize_padding` en `get_percent()` para output compacto
+- Removed `normalize_padding` in `get_percent()` for compact output
 
-## Configuración en tmux.conf
+## tmux.conf configuration
 
-El plugin se carga vía tpm apuntando a este fork:
+The plugin is loaded via tpm pointing to this fork:
 ```
 set -g @plugin 'gedarufi/tmux2k'
 ```
 
-## Colores (Tokyo Night Storm)
+## Colors (Tokyo Night Storm)
 
-| Variable tmux2k    | Hex       |
+| tmux2k variable    | Hex       |
 |--------------------|-----------|
 | `bg-main`          | `#1e1e2e` |
 | `black`            | `#1a1b26` |
@@ -53,7 +53,7 @@ set -g @plugin 'gedarufi/tmux2k'
 | `red`              | `#f7768e` |
 | `orange`           | `#ff9e64` |
 
-## Layout actual
+## Current layout
 
 ```
 [Session][Path][Git][● win1][● win2]...        [Battery][CPU][GPU][RAM][Langs][Time]
@@ -61,6 +61,6 @@ set -g @plugin 'gedarufi/tmux2k'
 
 - Left plugins: `session path git`
 - Right plugins: `battery cpu gpu ram langs time`
-- Window list: rounded pills (U+E0B6 / U+E0B4), alineados a la izquierda
-- Window activo: pill azul (`blue` sobre `bg_main`)
-- Window inactivo: pill gris (`dark-gray` sobre `bg_main`)
+- Window list: rounded pills (U+E0B6 / U+E0B4), left-aligned
+- Active window: blue pill (`blue` on `bg_main`)
+- Inactive window: gray pill (`dark-gray` on `bg_main`)
