@@ -6,34 +6,17 @@ Plugin improvement ideas, sorted by priority and complexity.
 
 ## Improvements to existing plugins
 
-### `plugins/git.sh` — Forge detection from remote URL
+### ~~`plugins/git.sh` — Forge detection from remote URL~~ ✅
 
-Currently always uses the same repo icon (). The idea is to parse the remote URL to show the correct platform icon.
-
-**Implementation:**
-```bash
-remote_url=$(git -C "$path" remote get-url origin 2>/dev/null)
-case "$remote_url" in
-    *github.com*)    forge_icon="" ;;
-    *gitlab.com*)    forge_icon="" ;;
-    *bitbucket.org*) forge_icon="" ;;
-    *codeberg.org*)  forge_icon="󰊢" ;;
-    *)               forge_icon="" ;;  # gitea/forgejo/other
-esac
-```
-
-Replace `$repo_icon` with `$forge_icon` in `get_message()`.
+Wildcard patterns for self-hosted instances (`*gitlab*`, `*gitea*`, `*forgejo*`, `*bitbucket*`, `*gogs*`). Falls back to `$repo_icon` for unknown remotes. Forge icon shown in clean state; `diff_icon` takes over when dirty.
 
 ---
 
-### `plugins/git.sh` — Additional info
+### ~~`plugins/git.sh` — Additional info~~ ✅
 
-- [ ] **Ahead/behind:** show `↑2 ↓1` when the branch has differences with the remote upstream
-  ```bash
-  git rev-list --count HEAD...@{u} 2>/dev/null
-  ```
-- [ ] **Stash:** show `` + count if stashes exist (`git stash list | wc -l`)
-- [ ] **Tag:** show the tag if HEAD is exactly on one (`git describe --exact-match --tags 2>/dev/null`)
+- [x] **Ahead/behind:** `↑2 ↓1` via `rev-list --left-right --count HEAD...@{u}` — configurable with `@tmux2k-git-show-sync`
+- [x] **Stash:** `` + count via `git stash list | wc -l` — configurable with `@tmux2k-git-show-stash`
+- [x] **Tag:** ` tagname` via `git describe --exact-match --tags` — configurable with `@tmux2k-git-show-tag`
 
 ---
 
@@ -200,10 +183,10 @@ GitHub Action that automatically opens an issue/PR when the upstream `2kabhishek
 
 | Priority | Item |
 |----------|------|
-| 🔴 High | `git.sh` — forge detection (GitHub/GitLab/Bitbucket) |
+| ✅ Done | `git.sh` — forge detection (GitHub/GitLab/Bitbucket + self-hosted) |
+| ✅ Done | `git.sh` — ahead/behind + stash + tag |
 | 🔴 High | `langs.sh` — add Rust, TypeScript, Bun |
 | 🟡 Medium | `forge.sh` — hub plugin with PR/MR count |
-| 🟡 Medium | `git.sh` — ahead/behind + stash |
 | 🟡 Medium | `music.sh` — now playing |
 | 🟢 Low | `kubectl.sh` — Kubernetes context |
 | 🟢 Low | `vpn.sh` — VPN status |

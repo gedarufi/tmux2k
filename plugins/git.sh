@@ -4,13 +4,32 @@ current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$current_dir/../lib/utils.sh"
 
 display_status=$(get_tmux_option '@tmux2k-git-display-status' 'false')
-added_icon=$(get_tmux_option '@tmux2k-git-added-icon' '')
-modified_icon=$(get_tmux_option '@tmux2k-git-modified-icon' '')
-updated_icon=$(get_tmux_option '@tmux2k-git-updated-icon' '')
-deleted_icon=$(get_tmux_option '@tmux2k-git-deleted-icon' '')
-repo_icon=$(get_tmux_option '@tmux2k-git-repo-icon' '')
-diff_icon=$(get_tmux_option '@tmux2k-git-diff-icon' '')
-no_repo_icon=$(get_tmux_option '@tmux2k-git-no-repo-icon' '')
+added_icon=$(get_tmux_option '@tmux2k-git-added-icon' '')
+modified_icon=$(get_tmux_option '@tmux2k-git-modified-icon' '')
+updated_icon=$(get_tmux_option '@tmux2k-git-updated-icon' '')
+deleted_icon=$(get_tmux_option '@tmux2k-git-deleted-icon' '')
+repo_icon=$(get_tmux_option '@tmux2k-git-repo-icon' '')
+diff_icon=$(get_tmux_option '@tmux2k-git-diff-icon' '')
+no_repo_icon=$(get_tmux_option '@tmux2k-git-no-repo-icon' '')
+show_sync=$(get_tmux_option '@tmux2k-git-show-sync' 'true')
+show_stash=$(get_tmux_option '@tmux2k-git-show-stash' 'true')
+show_tag=$(get_tmux_option '@tmux2k-git-show-tag' 'true')
+
+get_forge_icon() {
+    local remote_url
+    remote_url=$(git -C "$path" remote get-url origin 2>/dev/null)
+    # Wildcards for self-hosted: *gitlab*, *gitea*, *forgejo*, *bitbucket*, *gogs*
+    case "$remote_url" in
+        *github*)    echo "" ;;
+        *gitlab*)    echo "" ;;
+        *bitbucket*) echo "" ;;
+        *forgejo*)   echo "" ;;
+        *gitea*)     echo "" ;;
+        *gogs*)      echo "" ;;
+        *codeberg*)  echo "󰊢" ;;
+        *)           echo "$repo_icon" ;;
+    esac
+}
 
 get_changes() {
     declare -i added=0
@@ -58,7 +77,7 @@ check_for_changes() {
 }
 
 check_for_git_dir() {
-    if [ "$(git -C "$path" rev-parse --abbrev-ref HEAD)" != "" ]; then
+    if [ "$(git -C "$path" rev-parse --abbrev-ref HEAD 2>/dev/null)" != "" ]; then
         echo "true"
     else
         echo "false"
@@ -67,39 +86,68 @@ check_for_git_dir() {
 
 get_branch() {
     if [ $(check_for_git_dir) == "true" ]; then
-        printf "%.20s " $(git -C "$path" rev-parse --abbrev-ref HEAD)
+        printf "%.20s " $(git -C "$path" rev-parse --abbrev-ref HEAD)
     else
         echo "$no_repo_icon"
     fi
 }
 
+get_sync_status() {
+    [ "$show_sync" != "true" ] && return
+    local counts
+    counts=$(git -C "$path" rev-list --left-right --count HEAD...@{u} 2>/dev/null) || return
+    local ahead behind
+    ahead=$(echo "$counts" | awk '{print $1}')
+    behind=$(echo "$counts" | awk '{print $2}')
+    local output=""
+    [ "$ahead" -gt 0 ] && output+=" ↑${ahead}"
+    [ "$behind" -gt 0 ] && output+=" ↓${behind}"
+    echo "$output"
+}
+
+get_stash_info() {
+    [ "$show_stash" != "true" ] && return
+    local count
+    count=$(git -C "$path" stash list 2>/dev/null | wc -l | tr -d ' ')
+    [ "$count" -gt 0 ] && echo "  ${count}"
+}
+
+get_tag_info() {
+    [ "$show_tag" != "true" ] && return
+    local tag
+    tag=$(git -C "$path" describe --exact-match --tags 2>/dev/null) || return
+    [ -n "$tag" ] && echo "  ${tag}"
+}
+
 get_message() {
     if [ $(check_for_git_dir) == "true" ]; then
+        local branch forge_icon extra
         branch="$(get_branch)"
+        forge_icon="$(get_forge_icon)"
+        extra="$(get_tag_info)$(get_sync_status)$(get_stash_info)"
 
         if [ $(check_for_changes) == "true" ]; then
-
+            local changes
             changes="$(get_changes)"
 
             if [ "${display_status}" == "false" ]; then
                 if [ $(check_empty_symbol "$diff_icon") == "true" ]; then
-                    echo "${changes} $branch"
+                    echo "${changes} ${branch}${extra}"
                 else
-                    echo "$diff_icon ${changes} $branch"
+                    echo "$diff_icon ${changes} ${branch}${extra}"
                 fi
             else
                 if [ $(check_empty_symbol "$diff_icon") == "true" ]; then
-                    echo "$branch"
+                    echo "${branch}${extra}"
                 else
-                    echo "$diff_icon $branch"
+                    echo "$diff_icon ${branch}${extra}"
                 fi
             fi
-
         else
-            if [ $(check_empty_symbol "$repo_icon") == "true" ]; then
-                echo "$branch"
+            if [ $(check_empty_symbol "$forge_icon") == "true" ]; then
+                echo "${branch}${extra}"
             else
-                echo "$repo_icon $branch"
+                echo "$forge_icon ${branch}${extra}"
             fi
         fi
     else
