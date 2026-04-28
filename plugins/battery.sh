@@ -80,10 +80,26 @@ battery_label() {
     fi
 }
 
+battery_time_remaining() {
+    [ "$(uname -s)" != "Darwin" ] && return
+    local t
+    t=$(pmset -g batt 2>/dev/null | grep -oE '[0-9]+:[0-9]+ remaining')
+    [ -n "$t" ] && echo "${t% remaining}"
+}
+
 main() {
     bat_stat=$(battery_status)
     bat_perc="$(battery_percent)"
     bat_label="$(battery_label)"
+
+    local show_time
+    show_time=$(get_tmux_option "@tmux2k-battery-show-time" "false")
+    local time_part=""
+    if [[ "$show_time" == "true" ]]; then
+        local t
+        t=$(battery_time_remaining)
+        [ -n "$t" ] && time_part=" ${t}"
+    fi
 
     local color_prefix='' icon_color=''
     if [ -n "$battery_gradient" ] && [ -n "$bat_perc" ]; then
@@ -95,11 +111,11 @@ main() {
     fi
 
     if [ -z "$bat_stat" ]; then
-        echo "${icon_color}${bat_label}${color_prefix}${bat_perc}%"
+        echo "${icon_color}${bat_label}${color_prefix}${bat_perc}%${time_part}"
     elif [ -z "$bat_perc" ]; then
         echo "$bat_stat $bat_label"
     else
-        echo "$bat_stat ${icon_color}${bat_label}${color_prefix}${bat_perc}%"
+        echo "$bat_stat ${icon_color}${bat_label}${color_prefix}${bat_perc}%${time_part}"
     fi
 }
 

@@ -18,15 +18,17 @@ show_tag=$(get_tmux_option '@tmux2k-git-show-tag' 'true')
 get_forge_icon() {
     local remote_url
     remote_url=$(git -C "$path" remote get-url origin 2>/dev/null)
+    local gh gl bb git_ic
+    gh=$(printf '\xee\x9c\x89')    # U+E709 GitHub
+    gl=$(printf '\xef\x8a\x96')    # U+F296 GitLab
+    bb=$(printf '\xee\x9c\x83')    # U+E703 Bitbucket
+    git_ic=$(printf '\xee\x9c\x82') # U+E702 generic git
     # Wildcards for self-hosted: *gitlab*, *gitea*, *forgejo*, *bitbucket*, *gogs*
     case "$remote_url" in
-        *github*)    echo "" ;;
-        *gitlab*)    echo "" ;;
-        *bitbucket*) echo "" ;;
-        *forgejo*)   echo "" ;;
-        *gitea*)     echo "" ;;
-        *gogs*)      echo "" ;;
-        *codeberg*)  echo "󰊢" ;;
+        *github*)    echo "$gh" ;;
+        *gitlab*)    echo "$gl" ;;
+        *bitbucket*) echo "$bb" ;;
+        *forgejo*|*gitea*|*gogs*|*codeberg*) echo "$git_ic" ;;
         *)           echo "$repo_icon" ;;
     esac
 }
