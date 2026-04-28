@@ -4,15 +4,15 @@ source "$current_dir/../lib/utils.sh"
 
 get_os_icon() {
     case "$(uname -s)" in
-        Darwin) echo "" ;;
+        Darwin) printf '\xef\x85\xb9\n' ;;
         Linux)
             if grep -qi microsoft /proc/version 2>/dev/null; then
-                echo " WSL"
+                printf '\xef\x8c\x9a WSL\n'
             else
-                echo ""
+                printf '\xef\x8c\x9a\n'
             fi
             ;;
-        *) echo "" ;;
+        *) printf '\xee\xaf\x88\n' ;;
     esac
 }
 
