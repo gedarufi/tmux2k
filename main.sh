@@ -339,14 +339,21 @@ window_list() {
         current_flags="#{?window_flags,#[fg=${light_green}]#{window_flags},}"
     fi
 
+    local process_icon_fmt=""
+    local show_process_icon
+    show_process_icon=$(get_tmux_option "@tmux2k-windows-show-process-icon" "false")
+    if [[ "$show_process_icon" == "true" ]]; then
+        process_icon_fmt="#($current_dir/plugins/process-icon.sh #{pane_current_command}) "
+    fi
+
     if $show_powerline; then
         tmux set-window-option -g window-status-current-format \
-            "#[fg=${wfg},bg=${wbg}]${wl_sep}#[bg=${wfg}]${current_flags}#[fg=${wbg}]${spacer}${window_list_format}${spacer}#[fg=${wfg},bg=${wbg}]${wr_sep}"
+            "#[fg=${wfg},bg=${wbg}]${wl_sep}#[bg=${wfg}]${current_flags}#[fg=${wbg}]${spacer}${process_icon_fmt}${window_list_format}${spacer}#[fg=${wfg},bg=${wbg}]${wr_sep}"
         tmux set-window-option -g window-status-format \
-            "#[fg=${bg_alt},bg=${wbg}]${wl_sep}#[bg=${bg_alt}]${flags}#[fg=${white}]${spacer}${window_list_format}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
+            "#[fg=${bg_alt},bg=${wbg}]${wl_sep}#[bg=${bg_alt}]${flags}#[fg=${white}]${spacer}${process_icon_fmt}${window_list_format}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
     else
-        tmux set-window-option -g window-status-current-format "#[fg=${wbg},bg=${wfg}] ${window_list_format}${spacer}${current_flags} "
-        tmux set-window-option -g window-status-format "#[fg=${white},bg=${bg_main}] ${window_list_format}${spacer}${flags} "
+        tmux set-window-option -g window-status-current-format "#[fg=${wbg},bg=${wfg}] ${process_icon_fmt}${window_list_format}${spacer}${current_flags} "
+        tmux set-window-option -g window-status-format "#[fg=${white},bg=${bg_main}] ${process_icon_fmt}${window_list_format}${spacer}${flags} "
     fi
 }
 
