@@ -2,19 +2,19 @@
 current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$current_dir/../lib/utils.sh"
 
-node_icon=""
-python_icon=""
-ruby_icon=""
-go_icon="ﳑ"
-php_icon=""
-rust_icon=""
-ts_icon=""
-bun_icon=""
-deno_icon=""
-elixir_icon=""
-java_icon=""
-kotlin_icon=""
-swift_icon=""
+node_icon=$(printf '\xee\x9c\x98')    # U+E718
+python_icon=$(printf '\xee\x88\xb5')  # U+E235
+ruby_icon=$(printf '\xee\x9e\x91')    # U+E791
+go_icon=$(printf '\xef\xb3\x91')      # U+FCD1
+php_icon=$(printf '\xee\x9c\xbd')     # U+E73D
+rust_icon=$(printf '\xee\x9e\xa8')    # U+E7A8
+ts_icon=$(printf '\xee\x98\xa8')      # U+E628
+bun_icon=$(printf '\xee\x9c\x97')     # U+E717 (JS runtime fallback)
+deno_icon=$(printf '\xee\x98\xa8')    # U+E628 (TS-first runtime)
+elixir_icon=$(printf '\xee\x98\xad')  # U+E62D
+java_icon=$(printf '\xee\x9c\xb8')    # U+E738
+kotlin_icon=$(printf '\xee\x98\xb4')  # U+E634
+swift_icon=$(printf '\xee\x9d\x95')   # U+E755
 
 main() {
     local path
