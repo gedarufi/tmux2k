@@ -308,9 +308,9 @@ status_bar() {
                 pl_bg=${!next_colors[0]:-$bg_main}
                 local seg
                 if [ "$plugin" == "session" ]; then
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script #[fg=${!colors[0]},bg=${pl_bg}]#{?client_prefix,#[fg=${prefix_highlight}],}${l_sep}"
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script #[fg=${!colors[0]}]#[bg=${pl_bg}]#{?client_prefix,#[fg=${prefix_highlight}],}${l_sep}"
                 else
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script #[fg=${!colors[0]},bg=${pl_bg}]${l_sep}"
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script #[fg=${!colors[0]}]#[bg=${pl_bg}]${l_sep}"
                 fi
                 if $is_hideable; then
                     tmux set-option -ga status-left "#{?${opt_key},${seg},}"
@@ -321,9 +321,9 @@ status_bar() {
             else
                 local seg
                 if [ "$plugin" == "session" ]; then
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
                 else
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script "
                 fi
                 if $is_hideable; then
                     tmux set-option -ga status-left "#{?${opt_key},${seg},}"
@@ -344,9 +344,9 @@ status_bar() {
 
                 local seg
                 if [ "$plugin" == "session" ]; then
-                    seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
                 else
-                    seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script "
                 fi
 
                 if $is_hideable; then
@@ -362,9 +362,9 @@ status_bar() {
             else
                 local seg
                 if [ "$plugin" == "session" ]; then
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
                 else
-                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    seg="#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script "
                 fi
                 if $is_hideable; then
                     tmux set-option -ga status-right "#{?${opt_key},${seg},}"
