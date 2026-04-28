@@ -23,19 +23,28 @@ main() {
     name=$(tmux display-message -p "#S")
     local show_user
     show_user=$(get_tmux_option "@tmux2k-session-show-user" "false")
+    local show_window_count
+    show_window_count=$(get_tmux_option "@tmux2k-session-show-window-count" "false")
 
     local user_part=""
     if [[ "$show_user" == "true" ]]; then
         user_part=" $(whoami)"
     fi
 
+    local count_part=""
+    if [[ "$show_window_count" == "true" ]]; then
+        local count
+        count=$(tmux list-windows | wc -l | tr -d ' ')
+        count_part=" [$count]"
+    fi
+
     if [[ "$name" =~ ^[0-9]+$ ]]; then
-        echo "$icon$user_part"
+        echo "$icon$user_part$count_part"
     else
         if [[ "$show_user" == "true" ]]; then
-            echo "$icon$user_part · $name"
+            echo "$icon$user_part · $name$count_part"
         else
-            echo "$icon $name"
+            echo "$icon $name$count_part"
         fi
     fi
 }
