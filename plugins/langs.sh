@@ -112,7 +112,13 @@ main() {
         [[ -n "$v" ]] && output+="${php_icon} $v  "
     fi
 
-    [[ -n "$output" ]] && echo " ${output%  }" || echo ""
+    if [[ -n "$output" ]]; then
+        tmux set-option -gq "@tmux2k-langs-output" "1" 2>/dev/null
+        echo " ${output%  }"
+    else
+        tmux set-option -gq "@tmux2k-langs-output" "" 2>/dev/null
+        echo ""
+    fi
 }
 
 main

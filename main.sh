@@ -274,6 +274,17 @@ status_bar() {
         plugins=("${rplugins[@]}")
     fi
 
+    # Plugins that set @tmux2k-<plugin>-output and hide themselves when empty.
+    # Extend via: set -g @tmux2k-hideable-plugins "langs music forge"
+    local hideable_list
+    hideable_list=$(get_tmux_option "@tmux2k-hideable-plugins" "langs music forge")
+
+    # Tracks the previous hideable plugin's option key and the pl_bg before it,
+    # so the NEXT plugin's separator uses the correct background color whether or
+    # not the hideable plugin is currently visible.
+    local prev_hideable_opt=""
+    local pl_bg_before_hideable=""
+
     for plugin_index in "${!plugins[@]}"; do
         plugin="${plugins[$plugin_index]}"
         IFS=' ' read -r -a colors <<<"$(get_plugin_colors "$plugin")"
@@ -283,41 +294,82 @@ status_bar() {
             script="#(GROUP_NUM=${BASH_REMATCH[1]} $current_dir/plugins/group.sh)"
         fi
 
+        local is_hideable=false
+        local opt_key=""
+        if [[ " $hideable_list " =~ " $plugin " ]]; then
+            is_hideable=true
+            opt_key="@tmux2k-${plugin}-output"
+        fi
+
         if [ "$side" == "left" ]; then
             if $show_powerline; then
                 next_plugin=${plugins[$((plugin_index + 1))]}
                 IFS=' ' read -r -a next_colors <<<"$(get_plugin_colors "$next_plugin")"
                 pl_bg=${!next_colors[0]:-$bg_main}
+                local seg
                 if [ "$plugin" == "session" ]; then
-                    tmux set-option -ga status-left \
-                        "#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script #[fg=${!colors[0]},bg=${pl_bg}]#{?client_prefix,#[fg=${prefix_highlight}],}${l_sep}"
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script #[fg=${!colors[0]},bg=${pl_bg}]#{?client_prefix,#[fg=${prefix_highlight}],}${l_sep}"
                 else
-                    tmux set-option -ga status-left \
-                        "#[fg=${!colors[1]},bg=${!colors[0]}] $script #[fg=${!colors[0]},bg=${pl_bg}]${l_sep}"
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script #[fg=${!colors[0]},bg=${pl_bg}]${l_sep}"
+                fi
+                if $is_hideable; then
+                    tmux set-option -ga status-left "#{?${opt_key},${seg},}"
+                else
+                    tmux set-option -ga status-left "$seg"
                 fi
                 pl_bg=${bg_main}
             else
+                local seg
                 if [ "$plugin" == "session" ]; then
-                    tmux set-option -ga status-left "#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
                 else
-                    tmux set-option -ga status-left "#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                fi
+                if $is_hideable; then
+                    tmux set-option -ga status-left "#{?${opt_key},${seg},}"
+                else
+                    tmux set-option -ga status-left "$seg"
                 fi
             fi
         else
             if $show_powerline; then
-                if [ "$plugin" == "session" ]; then
-                    tmux set-option -ga status-right \
-                        "#[fg=${!colors[0]},bg=${pl_bg}]#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                # When previous plugin was hideable, make separator bg conditional:
+                # visible → use hideable plugin's bg; hidden → use bg from before it.
+                local sep_bg_part
+                if [[ -n "$prev_hideable_opt" ]]; then
+                    sep_bg_part="#{?${prev_hideable_opt},#[bg=${pl_bg}],#[bg=${pl_bg_before_hideable}]}"
                 else
-                    tmux set-option -ga status-right \
-                        "#[fg=${!colors[0]},bg=${pl_bg}]${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    sep_bg_part="#[bg=${pl_bg}]"
+                fi
+
+                local seg
+                if [ "$plugin" == "session" ]; then
+                    seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                else
+                    seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                fi
+
+                if $is_hideable; then
+                    tmux set-option -ga status-right "#{?${opt_key},${seg},}"
+                    pl_bg_before_hideable="$pl_bg"
+                    prev_hideable_opt="$opt_key"
+                else
+                    tmux set-option -ga status-right "$seg"
+                    prev_hideable_opt=""
+                    pl_bg_before_hideable=""
                 fi
                 pl_bg=${!colors[0]}
             else
+                local seg
                 if [ "$plugin" == "session" ]; then
-                    tmux set-option -ga status-right "#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
                 else
-                    tmux set-option -ga status-right "#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                    seg="#[fg=${!colors[1]},bg=${!colors[0]}] $script "
+                fi
+                if $is_hideable; then
+                    tmux set-option -ga status-right "#{?${opt_key},${seg},}"
+                else
+                    tmux set-option -ga status-right "$seg"
                 fi
             fi
         fi
