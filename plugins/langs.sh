@@ -112,13 +112,15 @@ main() {
         [[ -n "$v" ]] && output+="${php_icon} $v  "
     fi
 
+    local content=" ${output%  }"
     if [[ -n "$output" ]]; then
         tmux set-option -gq "@tmux2k-langs-output" "1" 2>/dev/null
-        echo " ${output%  }"
+        tmux set-option -gq "@tmux2k-langs-content" "$content" 2>/dev/null
     else
         tmux set-option -gq "@tmux2k-langs-output" "" 2>/dev/null
-        echo ""
+        tmux set-option -gq "@tmux2k-langs-content" "" 2>/dev/null
     fi
+    # Output nothing — content is read from @tmux2k-langs-content by main.sh
 }
 
 main

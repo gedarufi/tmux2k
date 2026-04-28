@@ -343,17 +343,25 @@ status_bar() {
                 fi
 
                 local seg
-                if [ "$plugin" == "session" ]; then
-                    seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
-                else
-                    seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script "
-                fi
-
                 if $is_hideable; then
-                    tmux set-option -ga status-right "#{?${opt_key},${seg},}"
+                    # Use stored content so #(script) can run outside the #{?} conditional.
+                    # Scripts that support hiding must set @tmux2k-<plugin>-content.
+                    local display="#{@tmux2k-${plugin}-content}"
+                    if [ "$plugin" == "session" ]; then
+                        seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],}${display}"
+                    else
+                        seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}]${display}"
+                    fi
+                    # #{?} wraps only the visual segment; $script always runs outside it.
+                    tmux set-option -ga status-right "#{?${opt_key},${seg},}$script"
                     pl_bg_before_hideable="$pl_bg"
                     prev_hideable_opt="$opt_key"
                 else
+                    if [ "$plugin" == "session" ]; then
+                        seg="#[fg=${!colors[0]}]${sep_bg_part}#{?client_prefix,#[fg=${prefix_highlight}],}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}]#{?client_prefix,#[bg=${prefix_highlight}],} $script "
+                    else
+                        seg="#[fg=${!colors[0]}]${sep_bg_part}${r_sep}#[fg=${!colors[1]}]#[bg=${!colors[0]}] $script "
+                    fi
                     tmux set-option -ga status-right "$seg"
                     prev_hideable_opt=""
                     pl_bg_before_hideable=""
