@@ -6,35 +6,116 @@ Personal fork of [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) with 
 
 Preserve changes made on top of the original tmux2k plugin so they are not lost when updating via tpm. The plugin is referenced from `~/.config/tmux/tmux.conf`.
 
+## Icon convention
+
+All Nerd Font icons are defined with `printf '\xHH\xHH\xHH'` (hex escapes), never as literal UTF-8 characters. The Write tool strips non-ASCII bytes, so literal icons are lost on any file rewrite. Always use printf.
+
 ## Modified files from upstream
 
+### `plugins/cpu.sh` / `plugins/gpu.sh` / `plugins/ram.sh`
+- Removed `normalize_padding` → compact output: `13%` instead of ` 13% `
+
+### `plugins/git.sh`
+- `get_forge_icon()`: detects GitHub, GitLab, Bitbucket, Forgejo, Gitea, Gogs, Codeberg from remote URL using wildcard patterns for self-hosted support
+- All forge icons use printf hex escapes
+- Options: `@tmux2k-git-show-sync`, `@tmux2k-git-show-stash`, `@tmux2k-git-show-tag`
+
 ### `plugins/path.sh`
-Rewritten with compact agnoster style:
-- Replaces `$HOME` with home icon ``
-- Each intermediate segment is represented as `  ` (folder icon, no name)
-- Only the last segment (current directory) shows its full name
-- Example: `~/Documents/coding/synkron/code` → ` ~    code`
+Compact agnoster style. Options:
+- `@tmux2k-path-mode`: `pane` (default) | `git-root` — in git-root mode shows repo name instead of pane path
+- `@tmux2k-path-max-depth`: integer (default `0` = unlimited) — if intermediate dirs exceed N, collapses to `…`
+- All icons (home, folder, git) use printf hex escapes
 
 ### `plugins/session.sh`
-- Shows OS icon (` ` on macOS, `` on Linux)
-- If the session name is numeric, shows only the icon (suppresses the number)
+- Shows OS icon (macOS, Linux, WSL) via printf hex
+- Options:
+  - `@tmux2k-session-icon`: override icon
+  - `@tmux2k-session-show-user`: `"true"` → appends `$(whoami)` — format: ` gedarufi · dev`
+  - `@tmux2k-session-show-window-count`: `"true"` → appends `[N]` — format: ` dev [3]`
+- Numeric session names suppress the name, showing only icon (+ user/count if enabled)
 
-### `plugins/cpu.sh`
-- Removed `normalize_padding` in `get_cpu_usage()` to eliminate padding spaces around the percentage
-- Compact output: `13%` instead of ` 13% `
+### `plugins/langs.sh`
+Detects project language by file presence in pane directory. Hides segment completely when no language detected (see hide-when-empty mechanism below).
 
-### `plugins/gpu.sh`
-- Removed `normalize_padding` in `get_gpu()` for compact output
+Detected languages and their trigger files:
 
-### `plugins/ram.sh`
-- Removed `normalize_padding` in `get_percent()` for compact output
+| Language   | Trigger file(s)               |
+|------------|-------------------------------|
+| Node.js    | `package.json`, `.nvmrc`, `.node-version` |
+| TypeScript | `tsconfig.json` (only if no Node triggers) |
+| Bun        | `bun.lockb`, `bunfig.toml`    |
+| Deno       | `deno.json`, `deno.jsonc`     |
+| Python     | `requirements.txt`, `Pipfile`, `pyproject.toml`, `.python-version` |
+| Go         | `go.mod`                      |
+| Rust       | `Cargo.toml`                  |
+| Ruby       | `Gemfile`, `.ruby-version`    |
+| Elixir     | `mix.exs`                     |
+| Java       | `pom.xml`, `build.gradle`     |
+| Kotlin     | `build.gradle.kts`            |
+| Swift      | `Package.swift`               |
+| PHP        | `composer.json`, `.php-version` |
 
-## tmux.conf configuration
+### `plugins/battery.sh`
+- Option: `@tmux2k-battery-show-time`: `"true"` → appends remaining time on macOS (parses `pmset -g batt`)
+- Format: ` 87% 2:30`
 
-The plugin is loaded via tpm pointing to this fork:
-```
-set -g @plugin 'gedarufi/tmux2k'
-```
+### `plugins/windows.sh` + `main.sh` — Process icon in pills
+- Option in `tmux.conf`: `@tmux2k-windows-show-process-icon "true"`
+- Uses `plugins/process-icon.sh` called via `#{pane_current_command}` in `window-status-format`
+- Shows icon of the active pane's process inside each window pill
+- `process-icon.sh` maps: nvim, vim, python3, node, docker, git, bash/zsh/sh/fish, ssh, htop/top/btop, cargo/rustc, ruby, go, lua, make
+
+## New plugins
+
+### `plugins/forge.sh`
+Shows forge icon + repo name for the current pane's git repo.
+- Options:
+  - `@tmux2k-forge-show-prs "true"` → fetches open PR/MR count (cached 5 min in `@tmux2k-forge-cache-*`)
+  - Requires `gh` (GitHub) or `glab` (GitLab) CLI for PR count
+- Output: ` gedarufi/tmux2k` or ` gedarufi/tmux2k  3`
+- Returns empty if pane is not in a git repo
+
+### `plugins/music.sh`
+Shows currently playing track.
+- macOS: Spotify → `spotify_icon artist — track`, Music.app → `music_icon artist — track`
+- Linux: `playerctl metadata`
+- Option: `@tmux2k-music-max-length` (default `40`) — truncates long strings
+- Returns empty if nothing is playing (segment hidden via hideable mechanism)
+
+### `plugins/kubectl.sh`
+Shows current Kubernetes context and namespace.
+- Option: `@tmux2k-kubectl-show-namespace "true"` (default) → appends `:namespace`
+- Red highlight if context name contains `prod` or `production`
+- Shows `⎈ —` if kubectl is not installed or no context is active
+
+### `plugins/vpn.sh`
+Detects active VPN connection.
+- macOS: checks `utun*` interfaces via `ifconfig`; Linux: checks `tun0`/`ppp0`
+- Option: `@tmux2k-vpn-show-name "true"` (default) → attempts to get VPN name
+  - Name detection: Tailscale (`tailscale status`), native macOS (`scutil --nc list`), fallback `"VPN"`
+- Connected: `shield_icon name`, disconnected: `lock_icon No VPN`
+
+## Focus mode
+
+`scripts/toggle-focus.sh` — toggles `status on/off` via `tmux set-option`.
+- State stored in `@tmux2k-focus-mode` (`on`/`off`)
+- Bound to `prefix + F` in `tmux.conf`
+
+## Hide-when-empty mechanism
+
+Plugins that support hiding set two tmux options instead of echoing output:
+- `@tmux2k-<plugin>-output`: `"1"` when visible, `""` when hidden
+- `@tmux2k-<plugin>-content`: the display string (plain text, no color codes)
+- Plugin echoes nothing (empty stdout)
+
+In `main.sh`, `status_bar()` handles hideable plugins differently:
+- `$script` (`#(plugin.sh)`) runs **outside** `#{?}` — always executes to update options
+- Display: `#{?@tmux2k-<plugin>-output, SEG_WITH_#{@tmux2k-<plugin>-content} ,}`
+- The following plugin's separator bg is conditional via `#{?@tmux2k-<plugin>-output,plugin_bg,prev_bg}` — no color artifact when hidden
+
+Configured via `@tmux2k-hideable-plugins` (default: `"langs music forge"`).
+
+**Important**: All `#[fg=X,bg=Y]` inside `#{?}` conditionals must be split to `#[fg=X]#[bg=Y]` — tmux does not protect commas inside `#[...]` from being treated as conditional separators.
 
 ## Colors (Tokyo Night Storm)
 
@@ -59,8 +140,21 @@ set -g @plugin 'gedarufi/tmux2k'
 [Session][Path][Git][● win1][● win2]...        [Battery][CPU][GPU][RAM][Langs][Time]
 ```
 
-- Left plugins: `session path git`
-- Right plugins: `battery cpu gpu ram langs time`
-- Window list: rounded pills (U+E0B6 / U+E0B4), left-aligned
-- Active window: blue pill (`blue` on `bg_main`)
-- Inactive window: gray pill (`dark-gray` on `bg_main`)
+```bash
+set -g @tmux2k-left-plugins "session path git"
+set -g @tmux2k-right-plugins "battery cpu gpu ram langs time"
+```
+
+- Window list: rounded pills, centered
+- Active window: blue pill
+- Inactive window: dark-gray pill
+- Process icon in pills: enabled via `@tmux2k-windows-show-process-icon "true"`
+
+## Available but inactive plugins
+
+These plugins exist and work but are not in the current layout. Add to `@tmux2k-left-plugins` or `@tmux2k-right-plugins` to activate:
+
+- `forge` — repo name + forge icon + optional PR/MR count
+- `music` — now playing
+- `kubectl` — Kubernetes context
+- `vpn` — VPN status
