@@ -6,6 +6,16 @@ Personal fork of [2kabhishek/tmux2k](https://github.com/2kabhishek/tmux2k) with 
 
 Preserve changes made on top of the original tmux2k plugin so they are not lost when updating via tpm. The plugin is referenced from `~/.config/tmux/tmux.conf`.
 
+## Workflow
+
+Changes must always go through the dev repo, never directly to the plugin dir:
+
+1. Edit files in `/Users/gedarufi/Documents/coding/tmux2k_gedarufi/`
+2. Commit and push to `https://github.com/gedarufi/tmux2k`
+3. The plugin dir at `~/.config/tmux/plugins/tmux2k/` is a tpm-managed clone — update it via `git pull` or tpm, never via `cp`
+
+Copying files directly to the plugin dir creates uncommitted local changes that block tpm updates.
+
 ## Icon convention
 
 All Nerd Font icons are defined with `printf '\xHH\xHH\xHH'` (hex escapes), never as literal UTF-8 characters. The Write tool strips non-ASCII bytes, so literal icons are lost on any file rewrite. Always use printf.
