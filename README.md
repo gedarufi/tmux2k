@@ -21,9 +21,12 @@ set -g @tmux2k-left-plugins ""
 set -g @tmux2k-right-plugins "path git langs time session"
 ```
 
-Window pills: centered. Active = magenta with white text. Inactive = dark-gray pill with blue badge (icon + number) and white name.
+Window pills: centered. Active = magenta pill, dark text. Inactive = dark-gray pill with blue badge (icon + number) and white name.
 
 ## Modified plugins
+
+### `lib/utils.sh`
+- `get_tmux_option()` fixed to distinguish option set to `""` vs option not set — enables `@tmux2k-left-plugins ""` to work correctly
 
 ### `session.sh`
 - Shows OS icon (macOS, Linux, WSL)
@@ -39,6 +42,7 @@ Compact agnoster style: `~/Documents/coding/synkron/code` → ` ~    code`
 
 ### `git.sh`
 - Forge icon auto-detected from remote URL: GitHub, GitLab, Bitbucket, Forgejo, Gitea, Gogs, Codeberg (wildcard patterns for self-hosted)
+- Forge icon always shown regardless of uncommitted changes
 - `@tmux2k-git-show-sync "true"` — ahead/behind indicators: `↑2 ↓1`
 - `@tmux2k-git-show-stash "true"` — stash count: `  2`
 - `@tmux2k-git-show-tag "true"` — exact tag if HEAD is tagged
@@ -77,7 +81,7 @@ Pills have a two-section layout: `[badge: icon + number][pill: name]`
 - `@tmux2k-window-list-colors "bg_main magenta"` — active pill color (second value); first value = gap background, must match status bar bg
 - Mapped commands: nvim, vim, python3, node, docker, git, bash/zsh/sh/fish, ssh, htop/top/btop, cargo, ruby, go, lua, make
 - Unrecognized commands show a gear icon (U+F013) by default
-- Active pill: uniform color, white text throughout
+- Active pill: uniform color, dark text (`wbg`)
 - Inactive pill: badge uses `@tmux2k-window-badge-bg`; left separator matches badge color
 
 ## New plugins
