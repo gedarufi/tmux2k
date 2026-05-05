@@ -25,9 +25,14 @@ All Nerd Font icons are defined with `printf '\xHH\xHH\xHH'` (hex escapes), neve
 ### `plugins/cpu.sh` / `plugins/gpu.sh` / `plugins/ram.sh`
 - Removed `normalize_padding` → compact output: `13%` instead of ` 13% `
 
+### `lib/utils.sh`
+- `get_tmux_option()`: fixed to distinguish between option set to `""` vs option not set at all — uses `tmux show-option -gq | grep` to detect presence before reading value with `-gqv`
+- Without this fix, `@tmux2k-left-plugins ""` falls back to default `"session git cwd"` instead of empty
+
 ### `plugins/git.sh`
 - `get_forge_icon()`: detects GitHub, GitLab, Bitbucket, Forgejo, Gitea, Gogs, Codeberg from remote URL using wildcard patterns for self-hosted support
 - All forge icons use printf hex escapes
+- `get_message()`: forge icon always shown regardless of uncommitted changes — previously it was hidden when the repo was dirty
 - Options: `@tmux2k-git-show-sync`, `@tmux2k-git-show-stash`, `@tmux2k-git-show-tag`
 
 ### `plugins/path.sh`
@@ -69,11 +74,20 @@ Detected languages and their trigger files:
 - Option: `@tmux2k-battery-show-time`: `"true"` → appends remaining time on macOS (parses `pmset -g batt`)
 - Format: ` 87% 2:30`
 
-### `plugins/windows.sh` + `main.sh` — Process icon in pills
-- Option in `tmux.conf`: `@tmux2k-windows-show-process-icon "true"`
-- Uses `plugins/process-icon.sh` called via `#{pane_current_command}` in `window-status-format`
-- Shows icon of the active pane's process inside each window pill
-- `process-icon.sh` maps: nvim, vim, python3, node, docker, git, bash/zsh/sh/fish, ssh, htop/top/btop, cargo/rustc, ruby, go, lua, make
+### `plugins/process-icon.sh`
+- Maps process name to Nerd Font icon via printf hex escapes
+- Mapped: nvim, vim, python3, node, docker, git, bash/zsh/sh/fish, ssh, htop/top/btop, cargo/rustc, ruby, go, lua, make
+- Default for unrecognized processes: gear icon U+F013 (`\xef\x80\x93`)
+
+### `main.sh` — Window pill badge system
+Pills have two color sections: `[badge: icon + number][pill: name]`
+
+- `@tmux2k-windows-show-process-icon "true"` — enables process icon in badge
+- `@tmux2k-window-badge-bg "blue"` — badge background for inactive pills (default: `blue`)
+- `@tmux2k-window-list-colors "bg_main magenta"` — first value = gap bg (must match status bar), second = active pill bg
+- Active pill: uniform color, dark text (`wbg`), no inner badge
+- Inactive pill: badge uses `badge_bg`; left separator matches badge color; name on `bg_alt`
+- `magenta` color variable added: `#c678dd` (configurable via `@tmux2k-magenta`)
 
 ## New plugins
 
@@ -143,21 +157,23 @@ Configured via `@tmux2k-hideable-plugins` (default: `"langs music forge"`).
 | `yellow`           | `#e0af68` |
 | `red`              | `#f7768e` |
 | `orange`           | `#ff9e64` |
+| `magenta`          | `#c678dd` |
 
 ## Current layout
 
 ```
-[Session][Path][Git][● win1][● win2]...        [Battery][CPU][GPU][RAM][Langs][Time]
+[● win1][● win2]...        [Path][Git][Langs][Time][Session]
 ```
 
 ```bash
-set -g @tmux2k-left-plugins "session path git"
-set -g @tmux2k-right-plugins "battery cpu gpu ram langs time"
+set -g @tmux2k-left-plugins ""
+set -g @tmux2k-right-plugins "path git langs time session"
 ```
 
-- Window list: rounded pills, centered
-- Active window: blue pill
-- Inactive window: dark-gray pill
+- Left bar: empty (set `@tmux2k-left-plugins ""` — requires utils.sh fix to work)
+- Window list: centered pills
+- Active window: magenta pill, dark text
+- Inactive window: dark-gray pill with blue badge (icon + number), white name
 - Process icon in pills: enabled via `@tmux2k-windows-show-process-icon "true"`
 
 ## Available but inactive plugins
