@@ -123,10 +123,16 @@ get_tag_info() {
 
 get_message() {
     if [ $(check_for_git_dir) == "true" ]; then
-        local branch forge_icon extra
+        local branch forge_icon extra prefix
         branch="$(get_branch)"
         forge_icon="$(get_forge_icon)"
         extra="$(get_tag_info)$(get_sync_status)$(get_stash_info)"
+
+        if [ $(check_empty_symbol "$forge_icon") == "true" ]; then
+            prefix=""
+        else
+            prefix="$forge_icon "
+        fi
 
         if [ $(check_for_changes) == "true" ]; then
             local changes
@@ -134,23 +140,19 @@ get_message() {
 
             if [ "${display_status}" == "false" ]; then
                 if [ $(check_empty_symbol "$diff_icon") == "true" ]; then
-                    echo "${changes} ${branch}${extra}"
+                    echo "${prefix}${changes} ${branch}${extra}"
                 else
-                    echo "$diff_icon ${changes} ${branch}${extra}"
+                    echo "${prefix}${diff_icon} ${changes} ${branch}${extra}"
                 fi
             else
                 if [ $(check_empty_symbol "$diff_icon") == "true" ]; then
-                    echo "${branch}${extra}"
+                    echo "${prefix}${branch}${extra}"
                 else
-                    echo "$diff_icon ${branch}${extra}"
+                    echo "${prefix}${diff_icon} ${branch}${extra}"
                 fi
             fi
         else
-            if [ $(check_empty_symbol "$forge_icon") == "true" ]; then
-                echo "${branch}${extra}"
-            else
-                echo "$forge_icon ${branch}${extra}"
-            fi
+            echo "${prefix}${branch}${extra}"
         fi
     else
         echo "$no_repo_icon"
