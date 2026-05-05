@@ -47,6 +47,7 @@ dark_purple=$(get_tmux_option "@tmux2k-dark-purple" '#4b0082')
 light_red=$(get_tmux_option "@tmux2k-light-red" '#ff4a6a')
 red=$(get_tmux_option "@tmux2k-red" '#ff1f1f')
 dark_red=$(get_tmux_option "@tmux2k-dark-red" '#800000')
+magenta=$(get_tmux_option "@tmux2k-magenta" '#c678dd')
 
 light_yellow=$(get_tmux_option "@tmux2k-light-yellow" '#fffacd')
 yellow=$(get_tmux_option "@tmux2k-yellow" '#ffd21a')
@@ -406,14 +407,23 @@ window_list() {
         process_icon_fmt="#($current_dir/plugins/process-icon.sh #{pane_current_command}) "
     fi
 
+    local badge_bg_name badge_bg
+    badge_bg_name=$(get_tmux_option "@tmux2k-window-badge-bg" "blue")
+    badge_bg="${!badge_bg_name}"
+
+    # active: dark badge (bg_main) on blue pill — yellow fg for contrast
+    # inactive: user-defined badge bg (default blue) on dark-gray pill — black fg
+    local active_wlf="${window_list_format//#W/#[fg=${white}]#[bg=${wfg}] #W}"
+    local inactive_wlf="${window_list_format//#W/#[fg=${white}]#[bg=${bg_alt}] #W}"
+
     if $show_powerline; then
         tmux set-window-option -g window-status-current-format \
-            "#[fg=${wfg},bg=${wbg}]${wl_sep}#[bg=${wfg}]${current_flags}#[fg=${wbg}]${spacer}${process_icon_fmt}${window_list_format}${spacer}#[fg=${wfg},bg=${wbg}]${wr_sep}"
+            "#[fg=${wfg},bg=${wbg}]${wl_sep}#[fg=${white},bg=${wfg}]${current_flags}${spacer}${process_icon_fmt}${active_wlf}${spacer}#[fg=${wfg},bg=${wbg}]${wr_sep}"
         tmux set-window-option -g window-status-format \
-            "#[fg=${bg_alt},bg=${wbg}]${wl_sep}#[bg=${bg_alt}]${flags}#[fg=${white}]${spacer}${process_icon_fmt}${window_list_format}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
+            "#[fg=${badge_bg},bg=${wbg}]${wl_sep}#[fg=${wbg},bg=${badge_bg}]${flags}${spacer}${process_icon_fmt}${inactive_wlf}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
     else
-        tmux set-window-option -g window-status-current-format "#[fg=${wbg},bg=${wfg}] ${process_icon_fmt}${window_list_format}${spacer}${current_flags} "
-        tmux set-window-option -g window-status-format "#[fg=${white},bg=${bg_main}] ${process_icon_fmt}${window_list_format}${spacer}${flags} "
+        tmux set-window-option -g window-status-current-format "#[fg=${white},bg=${wfg}] ${process_icon_fmt}${active_wlf}${spacer}${current_flags} "
+        tmux set-window-option -g window-status-format "#[fg=${white},bg=${bg_main}] #[fg=${wbg},bg=${badge_bg}]${process_icon_fmt}${inactive_wlf}${spacer}${flags} "
     fi
 }
 

@@ -13,5 +13,5 @@ case "$1" in
     go)                     printf '\xef\xb3\x91' ;;  # U+FCD1
     lua)                    printf '\xef\x8b\x82' ;;  # U+F2C2
     make)                   printf '\xef\x84\xa3' ;;  # U+F123
-    *)                      echo "" ;;
+    *)                      printf '\xef\x80\x93' ;;  # U+F013 gear (unknown process)
 esac
