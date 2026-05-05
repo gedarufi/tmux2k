@@ -13,15 +13,15 @@ set -g @plugin 'gedarufi/tmux2k'
 ## Current layout (Tokyo Night Storm)
 
 ```
-[Session][Path][Git][● win1][● win2]...        [Battery][CPU][GPU][RAM][Langs][Time]
+[● win1][● win2]...        [Path][Git][Langs][Time][Session]
 ```
 
 ```bash
-set -g @tmux2k-left-plugins "session path git"
-set -g @tmux2k-right-plugins "battery cpu gpu ram langs time"
+set -g @tmux2k-left-plugins ""
+set -g @tmux2k-right-plugins "path git langs time session"
 ```
 
-Window pills: rounded (U+E0B6 / U+E0B4), centered. Active = blue, inactive = dark-gray.
+Window pills: centered. Active = magenta with white text. Inactive = dark-gray pill with blue badge (icon + number) and white name.
 
 ## Modified plugins
 
@@ -68,9 +68,17 @@ Detects project language from files in pane directory. **Hides entirely when no 
 ### `cpu.sh` / `gpu.sh` / `ram.sh`
 - Removed `normalize_padding` → compact output: `13%` instead of ` 13% `
 
-### Window pills — process icon
-- `@tmux2k-windows-show-process-icon "true"` — shows active pane's process icon inside each pill
+### Window pills — badge + process icon
+
+Pills have a two-section layout: `[badge: icon + number][pill: name]`
+
+- `@tmux2k-windows-show-process-icon "true"` — shows active pane's process icon in the badge
+- `@tmux2k-window-badge-bg "blue"` — badge background color for inactive pills (default: `blue`)
+- `@tmux2k-window-list-colors "bg_main magenta"` — active pill color (second value); first value = gap background, must match status bar bg
 - Mapped commands: nvim, vim, python3, node, docker, git, bash/zsh/sh/fish, ssh, htop/top/btop, cargo, ruby, go, lua, make
+- Unrecognized commands show a gear icon (U+F013) by default
+- Active pill: uniform color, white text throughout
+- Inactive pill: badge uses `@tmux2k-window-badge-bg`; left separator matches badge color
 
 ## New plugins
 
@@ -109,13 +117,21 @@ VPN connection status.
 bind-key F run-shell "~/.tmux/plugins/tmux2k/scripts/toggle-focus.sh"
 ```
 
+## Left plugins
+
+Set to empty string to hide the left status bar entirely:
+
+```bash
+set -g @tmux2k-left-plugins ""
+```
+
 ## Available but inactive plugins
 
 Add to `@tmux2k-left-plugins` or `@tmux2k-right-plugins` to activate:
 
 ```bash
 # forge, music, kubectl, vpn
-set -g @tmux2k-right-plugins "battery cpu gpu ram forge music langs time"
+set -g @tmux2k-right-plugins "path git forge music langs time session"
 ```
 
 ## Color palette (Tokyo Night Storm)
@@ -134,6 +150,22 @@ set -g @tmux2k-right-plugins "battery cpu gpu ram forge music langs time"
 | `yellow`        | `#e0af68` |
 | `red`           | `#f7768e` |
 | `orange`        | `#ff9e64` |
+| `magenta`       | `#c678dd` |
+
+## Dev workflow
+
+All changes go in this repo. The plugin dir (`~/.config/tmux/plugins/tmux2k/`) is tpm-managed — never copy files there directly.
+
+```bash
+# 1. Edit files here
+# 2. Commit and push
+git add -p && git commit -m "..." && git push
+# 3. Update plugin dir
+git -C ~/.config/tmux/plugins/tmux2k pull
+tmux source ~/.config/tmux/tmux.conf
+```
+
+Copying directly to the plugin dir creates uncommitted local changes that block tpm updates.
 
 ## Syncing with upstream
 
