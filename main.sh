@@ -411,18 +411,18 @@ window_list() {
     badge_bg_name=$(get_tmux_option "@tmux2k-window-badge-bg" "blue")
     badge_bg="${!badge_bg_name}"
 
-    # active: dark badge (bg_main) on blue pill — yellow fg for contrast
+    # active: magenta badge, name on bg_alt — same structure as inactive
     # inactive: user-defined badge bg (default blue) on dark-gray pill — black fg
-    local active_wlf="${window_list_format//#W/#[fg=${wbg}]#[bg=${wfg}] #W}"
+    local active_wlf="${window_list_format//#W/#[fg=${white}]#[bg=${bg_alt}] #W}"
     local inactive_wlf="${window_list_format//#W/#[fg=${white}]#[bg=${bg_alt}] #W}"
 
     if $show_powerline; then
         tmux set-window-option -g window-status-current-format \
-            "#[fg=${wfg},bg=${wbg}]${wl_sep}#[fg=${wbg},bg=${wfg}]${current_flags}${spacer}${process_icon_fmt}${active_wlf}${spacer}#[fg=${wfg},bg=${wbg}]${wr_sep}"
+            "#[fg=${magenta},bg=${wbg}]${wl_sep}#[fg=${wbg},bg=${magenta}]${current_flags}${spacer}${process_icon_fmt}${active_wlf}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
         tmux set-window-option -g window-status-format \
             "#[fg=${badge_bg},bg=${wbg}]${wl_sep}#[fg=${wbg},bg=${badge_bg}]${flags}${spacer}${process_icon_fmt}${inactive_wlf}${spacer}#[fg=${bg_alt},bg=${wbg}]${wr_sep}"
     else
-        tmux set-window-option -g window-status-current-format "#[fg=${wbg},bg=${wfg}] ${process_icon_fmt}${active_wlf}${spacer}${current_flags} "
+        tmux set-window-option -g window-status-current-format "#[fg=${white},bg=${bg_main}] #[fg=${wbg},bg=${magenta}]${process_icon_fmt}${active_wlf}${spacer}${current_flags} "
         tmux set-window-option -g window-status-format "#[fg=${white},bg=${bg_main}] #[fg=${wbg},bg=${badge_bg}]${process_icon_fmt}${inactive_wlf}${spacer}${flags} "
     fi
 }
